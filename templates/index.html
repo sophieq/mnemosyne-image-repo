@@ -1,40 +1,29 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>My Photos</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/sakura.css/css/sakura-dark.css"
-      type="text/css"
-    />
-  </head>
+{% extends "base.html" %} {% block content %}
+<div>
+  <h1>{{ name }} Photos</h1>
+  <hr />
 
-  <body>
-    <h1>My Photos</h1>
-    <hr />
-
-    <form action="/images" method="POST" enctype="multipart/form-data">
-      <div class="form-group">
-        <label>Select image</label>
-        <div class="custom-file">
-          <input
-            type="file"
-            class="custom-file-input"
-            name="images"
-            id="images"
-            multiple
-          />
-        </div>
+  <form action="/images" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Select image</label>
+      <div class="custom-file">
+        <input
+          type="file"
+          class="custom-file-input"
+          name="images"
+          id="images"
+          multiple
+        />
       </div>
-
-      <button type="submit" class="btn btn-primary">Upload</button>
-    </form>
-
-    <div>
-      {% for path in image_paths %}
-      <img src="{{url_for('static', filename=path)}}" />
-      {% endfor %}
     </div>
-  </body>
-</html>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+
+  <div>
+    {% for path in image_paths %}
+    <img src="{{url_for('static', filename=path)}}" />
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,30 +1,51 @@
 from dotenv import load_dotenv
 import os
 from datetime import date
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask_login import LoginManager, login_required, current_user
 from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
+
+# app set up
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 Migrate(app, db)
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.init_app(app)
 
-from models import Image
+from auth import auth as auth_blueprint
+app.register_blueprint(auth_blueprint)
 
-def get_response(status, code, message):
-    return jsonify({"{}".format(status): "{}".format(code), "message": "{}".format(message)}), code
+from models import Image, User
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# TODO: splash screen
 @app.route('/', methods=["GET"])
 def index():
     return render_template('index.html')
+
+@app.route('/profile', methods=["GET"])
+@login_required
+def profile():
+    name = current_user.first_name + "'s"
+    return render_template('index.html', name=name)
 
 @app.route('/images', methods=["POST"])
 def upload_images():
     if request.files:
         images = request.files.getlist("images")
+
+        if not images:
+            return redirect('index')
+
         img_objects = []
         paths = []
 
@@ -41,7 +62,7 @@ def upload_images():
             paths.append(relative_path)
         db.session.bulk_save_objects(img_objects)
         db.session.commit()
-        return render_template('index.html', image_paths=paths)
+        return redirect(url_for('index', image_paths=paths))
 
 if __name__ == '__main__':
     app.run()
