@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from datetime import date
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -11,6 +11,9 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 Migrate(app, db)
+
+from auth import auth as auth_blueprint
+app.register_blueprint(auth_blueprint)
 
 from models import Image
 
@@ -25,6 +28,10 @@ def index():
 def upload_images():
     if request.files:
         images = request.files.getlist("images")
+
+        if not images:
+            return render_template('index.html')
+
         img_objects = []
         paths = []
 
@@ -41,7 +48,7 @@ def upload_images():
             paths.append(relative_path)
         db.session.bulk_save_objects(img_objects)
         db.session.commit()
-        return render_template('index.html', image_paths=paths)
+        return redirect(url_for('index', image_paths=paths))
 
 if __name__ == '__main__':
     app.run()
