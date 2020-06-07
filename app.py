@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
-from flask import Flask, render_template
+from datetime import date
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -13,10 +14,34 @@ Migrate(app, db)
 
 from models import Image
 
-@app.route('/', methods=["GET", "POST"])
+def get_response(status, code, message):
+    return jsonify({"{}".format(status): "{}".format(code), "message": "{}".format(message)}), code
+
+@app.route('/', methods=["GET"])
 def index():
     return render_template('index.html')
 
+@app.route('/images', methods=["POST"])
+def upload_images():
+    if request.files:
+        images = request.files.getlist("images")
+        img_objects = []
+        paths = []
+
+        for image in images:
+            # save image to folder and path to db
+            abs_path = os.path.join(app.config["IMAGE_UPLOADS"], image.filename)
+            relative_path = os.path.join(app.config["RELATIVE_PATH"], image.filename)
+            image.save(abs_path)
+            img_obj = Image(
+                date_uploaded=date.today(),
+                path=relative_path
+            )
+            img_objects.append(img_obj)
+            paths.append(relative_path)
+        db.session.bulk_save_objects(img_objects)
+        db.session.commit()
+        return render_template('index.html', image_paths=paths)
 
 if __name__ == '__main__':
     app.run()

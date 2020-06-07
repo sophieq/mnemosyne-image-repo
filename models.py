@@ -8,7 +8,6 @@ class Image(db.Model):
     is_favourite = db.Column(db.Boolean)
     path = db.Column(db.String)
 
-    def __init__(self, date_uploaded, favourite, path):
+    def __init__(self, date_uploaded, path):
         self.date_uploaded = date_uploaded
-        self.favourite = favourite
         self.path = path
