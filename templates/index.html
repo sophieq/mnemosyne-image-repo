@@ -6,6 +6,11 @@
   <form action="/images" method="POST" enctype="multipart/form-data">
     <div class="form-group">
       <label>Select image</label>
+      {% with messages = get_flashed_messages() %} {% if messages %}
+      <div class="notification is-danger">
+        {{ messages[0] }}
+      </div>
+      {% endif %} {% endwith %}
       <div class="custom-file">
         <input
           type="file"
@@ -21,8 +26,16 @@
   </form>
 
   <div>
-    {% for path in image_paths %}
-    <img src="{{url_for('static', filename=path)}}" />
+    {% for section in image_sections %}
+    <div>
+      <h2>{{section[0]}}</h2>
+      <hr />
+      {% for path in section[1] %}
+      <div>
+        <img src="{{url_for('static', filename=path)}}" />
+      </div>
+      {% endfor %}
+    </div>
     {% endfor %}
   </div>
 </div>
