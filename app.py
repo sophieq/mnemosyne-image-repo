@@ -1,5 +1,8 @@
-from dotenv import load_dotenv
+import boto3
 import os
+
+from botocore.exceptions import NoCredentialsError
+from dotenv import load_dotenv
 from datetime import date
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import LoginManager, login_required, current_user
@@ -63,6 +66,18 @@ def upload_images():
             # save image to folder and path to db
             abs_path = os.path.join(app.config["IMAGE_UPLOADS"], image.filename)
             relative_path = os.path.join(app.config["RELATIVE_PATH"], image.filename)
+
+            # save to s3
+            s3 = boto3.client('s3')
+            try:
+                s3.upload_file(abs_path, 'image-repo-storage', image.filename)
+            except FileNotFoundError:
+                print("The file was not found")
+                return
+            except NoCredentialsError:
+                print("Credentials not available")
+                return
+
             image.save(abs_path)
             img_obj = Image(
                 date_uploaded=date.today(),
@@ -73,7 +88,7 @@ def upload_images():
             paths.append(relative_path)
         db.session.bulk_save_objects(img_objects)
         db.session.commit()
-        return redirect(url_for('index')
+        return redirect(url_for('index'))
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
