@@ -21,22 +21,20 @@
         />
       </div>
     </div>
-
     <button type="submit" class="btn btn-primary">Upload</button>
   </form>
-
   <div>
-    {% for section in image_sections %}
+    <img src="{{url}}" />
+
+    <!-- {% for section in image_sections %} -->
     <div>
       <h2>{{section[0]}}</h2>
       <hr />
-      {% for path in section[1] %}
-      <div>
-        <img src="{{url_for('static', filename=path)}}" />
-      </div>
-      {% endfor %}
+      <!-- {% for path in url %} -->
+      <div></div>
+      <!-- {% endfor %} -->
     </div>
-    {% endfor %}
+    <!-- {% endfor %} -->
   </div>
 </div>
 {% endblock %}

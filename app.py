@@ -1,4 +1,3 @@
-import boto3
 import os
 
 from botocore.exceptions import NoCredentialsError
@@ -9,6 +8,7 @@ from flask_login import LoginManager, login_required, current_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects import postgresql
+from image_storage_service import ImageStorageService
 
 load_dotenv()
 
@@ -31,7 +31,6 @@ from models import Image, User
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# TODO: splash screen
 @app.route('/', methods=["GET"])
 @login_required
 def index():
@@ -39,23 +38,16 @@ def index():
     # get previously uploaded photos
     image_sections = []
     image_objects = db.session.query(Image.date_uploaded, postgresql.array_agg(Image.path)).join(User).group_by(Image.date_uploaded).all()
-    for obj in image_objects:
-        section = {
-            "date": obj[0],
-            "paths": obj[1]
-        }
-        image_sections.append(obj)
-    return render_template('index.html', name=name, image_sections=image_sections)
+    url = ImageStorageService.generate_presigned_url("blank")
+    return render_template('index.html', name=name, url=url)
 
 @app.route('/images', methods=["POST"])
 @login_required
 def upload_images():
-    print("got request")
     print(request.files)
     if request.files:
         images = request.files.getlist("images")
         img_objects = []
-        paths = []
 
         for image in images:
             # check that images where uploaded
@@ -63,31 +55,27 @@ def upload_images():
                 flash('Please add photos.')
                 return redirect(url_for('index'))
 
-            # save image to folder and path to db
-            abs_path = os.path.join(app.config["IMAGE_UPLOADS"], image.filename)
-            relative_path = os.path.join(app.config["RELATIVE_PATH"], image.filename)
-
-            # save to s3
-            s3 = boto3.client('s3')
             try:
-                s3.upload_file(abs_path, 'image-repo-storage', image.filename)
+                ImageStorageService.upload_image(image)
             except FileNotFoundError:
-                print("The file was not found")
-                return
+                flash('Internal Error: The file was not found. Please try again later.')
+                return redirect(url_for('index'))
             except NoCredentialsError:
-                print("Credentials not available")
-                return
+                flash('Internal Error: Credentials not available. Please try again later.')
+                return redirect(url_for('index'))
 
-            image.save(abs_path)
+            # create database object
             img_obj = Image(
                 date_uploaded=date.today(),
-                path=relative_path,
+                path=image.filename,
                 user_id=current_user.id
             )
             img_objects.append(img_obj)
-            paths.append(relative_path)
+
+        # save images into database
         db.session.bulk_save_objects(img_objects)
         db.session.commit()
+        flash('Uploaded Successfully.')
         return redirect(url_for('index'))
 
 if __name__ == "__main__":

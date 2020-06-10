@@ -12,6 +12,3 @@ MONTHS = {
     11: "November",
     12: "December"
 }
-
-def get_response(status, code, message):
-    return jsonify({"{}".format(status): "{}".format(code), "message": "{}".format(message)}), code
