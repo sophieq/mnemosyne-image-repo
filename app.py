@@ -2,11 +2,12 @@ import os
 
 from botocore.exceptions import NoCredentialsError
 from dotenv import load_dotenv
-from datetime import date
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import LoginManager, login_required, current_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from sqlalchemy.dialects import postgresql
 from image_storage_service import ImageStorageService
 
@@ -36,10 +37,13 @@ def load_user(user_id):
 def index():
     name = current_user.first_name + "'s"
     # get previously uploaded photos
-    image_sections = []
-    image_objects = db.session.query(Image.date_uploaded, postgresql.array_agg(Image.path)).join(User).group_by(Image.date_uploaded).all()
-    url = ImageStorageService.generate_presigned_url("blank")
-    return render_template('index.html', name=name, url=url)
+    image_objects = db.session.query(Image.date_uploaded, postgresql.array_agg(Image.path))\
+                    .join(User)\
+                    .group_by(Image.date_uploaded)\
+                    .order_by(desc(Image.date_uploaded))\
+                    .all()
+    image_sections = ImageStorageService.get_user_images(image_objects)
+    return render_template('index.html', name=name, image_sections=image_sections)
 
 @app.route('/images', methods=["POST"])
 @login_required
@@ -66,7 +70,7 @@ def upload_images():
 
             # create database object
             img_obj = Image(
-                date_uploaded=date.today(),
+                date_uploaded=datetime.today(),
                 path=image.filename,
                 user_id=current_user.id
             )

@@ -1,4 +1,4 @@
-MONTHS = {
+month_dictionary = {
     1: "January",
     2: "Feburary",
     3: "March",

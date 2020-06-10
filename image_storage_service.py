@@ -6,8 +6,23 @@ from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from utils import month_dictionary
 
 class ImageStorageService():
+    @staticmethod
+    def get_user_images(objects):
+        image_sections = []
+        for obj in objects:
+            urls = []
+            for path in obj[1]:
+                url = ImageStorageService.generate_presigned_url(path)
+                urls.append(url)
+            image_section = {
+                "date": month_dictionary[obj[0].month] + " " + str(obj[0].year),
+                "urls": urls
+            }
+            image_sections.append(image_section)
+        return image_sections
 
     @staticmethod
     def upload_image(image):
@@ -37,7 +52,7 @@ class ImageStorageService():
     @staticmethod
     def generate_presigned_url(filename):
         expire_date = datetime.utcnow() + timedelta(days=7) # expires in 2 days
-        bucket_resource_url = 'sophie_dp.png'
+        bucket_resource_url = filename
         url = ImageStorageService.create_cloudfront_signed_url(
             bucket_resource_url,
             expire_date
