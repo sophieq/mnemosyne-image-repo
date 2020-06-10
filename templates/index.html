@@ -6,7 +6,8 @@
   <form action="/images" method="POST" enctype="multipart/form-data">
     <div class="form-group">
       <label>Add Images</label>
-      {% with messages = get_flashed_messages() %} {% if messages %}
+      {% with messages = get_flashed_messages(category_filter=["feedback"]) %}
+      {% if messages %}
       <div class="notification is-danger">
         {{ messages[0] }}
       </div>
@@ -23,6 +24,18 @@
     </div>
     <button type="submit" class="btn btn-primary">Upload</button>
   </form>
+  <br />
+
+  <form action="share" method="GET">
+    <label>Get Sharing Link</label>
+    <button type="submit" class="btn btn-primary">Generate</button>
+  </form>
+  {% with messages = get_flashed_messages(category_filter=["link"]) %} {% if
+  messages %}
+  <div class="notification is-danger">
+    {{ messages[0] }}
+  </div>
+  {% endif %} {% endwith %}
   <div>
     {% for section in image_sections %}
     <div>

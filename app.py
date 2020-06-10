@@ -1,4 +1,5 @@
 import os
+import secrets
 
 from botocore.exceptions import NoCredentialsError
 from dotenv import load_dotenv
@@ -46,6 +47,27 @@ def index():
     image_sections = ImageStorageService.get_user_images(image_objects)
     return render_template('index.html', name=name, image_sections=image_sections)
 
+@app.route('/<user_id>', methods=["GET"])
+def verify_sharing_link(user_id):
+    token = request.args.get('sharing')
+    user = User.query.filter_by(id=user_id).first()
+    if user.token == token:
+        # TODO: fix this
+        return redirect(url_for('index'))
+
+
+
+@app.route('/share', methods=["GET"])
+@login_required
+def get_sharing_link():
+    token = secrets.token_urlsafe(16)
+    user = User.query.filter_by(id=current_user.id).first()
+    user.sharing_token = token
+    db.session.commit()
+    url = request.url_root + str(current_user.id) + "?sharing=" + token
+    flash(url, 'link')
+    return redirect(url_for('index'))
+
 @app.route('/images', methods=["POST"])
 @login_required
 def upload_images():
@@ -56,16 +78,16 @@ def upload_images():
         for image in images:
             # check that images where uploaded
             if image.filename == "":
-                flash('Please add photos.')
+                flash('Please add photos.', 'feedback')
                 return redirect(url_for('index'))
 
             try:
                 ImageStorageService.upload_image(image)
             except FileNotFoundError:
-                flash('Internal Error: The file was not found. Please try again later.')
+                flash('Internal Error: The file was not found. Please try again later.', 'feedback')
                 return redirect(url_for('index'))
             except NoCredentialsError:
-                flash('Internal Error: Credentials not available. Please try again later.')
+                flash('Internal Error: Credentials not available. Please try again later.', 'feedback')
                 return redirect(url_for('index'))
 
             this_month = datetime(
@@ -84,7 +106,7 @@ def upload_images():
         # save images into database
         db.session.bulk_save_objects(img_objects)
         db.session.commit()
-        flash('Uploaded Successfully.')
+        flash('Uploaded Successfully.', 'feedback')
         return redirect(url_for('index'))
 
 if __name__ == "__main__":

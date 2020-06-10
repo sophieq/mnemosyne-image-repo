@@ -9,11 +9,6 @@ class Image(db.Model):
     path = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
 
-    def __init__(self, month_uploaded, path, user_id):
-        self.month_uploaded = month_uploaded
-        self.path = path
-        self.user_id = user_id
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -22,4 +17,5 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(1000))
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
+    sharing_token = db.Column(db.String(1000), nullable=True)
     images = db.relationship('Image', backref='user', lazy=True)
