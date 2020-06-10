@@ -32,7 +32,6 @@ class ImageStorageService():
         from app import app
         filename = secure_filename(image.filename)
         path = os.path.join(tempfile.gettempdir(), filename)
-        # path = os.path.abspath(relative_path)
 
         # save to temp file for now
         image.save(path)
@@ -80,7 +79,7 @@ class ImageStorageService():
 
     # source: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudfront.html#generate-a-signed-url-for-amazon-cloudfront
     @staticmethod
-    def rsa_signer(message: str) -> str:
+    def rsa_signer(message):
         from app import app
 
         private_key = serialization.load_pem_private_key(

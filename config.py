@@ -5,7 +5,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    SECRET_KEY = 'this-really-needs-to-be-changed'
+    SECRET_KEY = os.environ['FLASK_KEY']
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     IMAGE_UPLOADS = 'static/tmp'
     CF_KEY = os.environ['CLOUDFRONT_KEY']
