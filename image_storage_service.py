@@ -6,7 +6,9 @@ from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from werkzeug.utils import secure_filename
 from utils import month_dictionary
+import tempfile
 
 class ImageStorageService():
     @staticmethod
@@ -28,8 +30,9 @@ class ImageStorageService():
     def upload_image(image):
         # save image to folder and path to db
         from app import app
-        relative_path = os.path.join(app.config["IMAGE_UPLOADS"], image.filename)
-        path = os.path.abspath(relative_path)
+        filename = secure_filename(image.filename)
+        path = os.path.join(tempfile.gettempdir(), filename)
+        # path = os.path.abspath(relative_path)
 
         # save to temp file for now
         image.save(path)
@@ -43,7 +46,7 @@ class ImageStorageService():
             s3.upload_file(
                 path,
                 app.config["BUCKET"],
-                image.filename,
+                filename,
                 ExtraArgs=ExtraArgs
             )
         except Exception as err:

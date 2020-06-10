@@ -5,15 +5,13 @@ class Image(db.Model):
     __tablename__ = 'images'
 
     id = db.Column(db.Integer, primary_key=True)
-    date_uploaded = db.Column(db.DateTime)
-    is_favourite = db.Column(db.Boolean)
+    month_uploaded = db.Column(db.DateTime)
     path = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
 
-    def __init__(self, date_uploaded, path, user_id):
-        self.date_uploaded = date_uploaded
+    def __init__(self, month_uploaded, path, user_id):
+        self.month_uploaded = month_uploaded
         self.path = path
-        self.is_favourite = False
         self.user_id = user_id
 
 class User(UserMixin, db.Model):

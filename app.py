@@ -37,10 +37,11 @@ def load_user(user_id):
 def index():
     name = current_user.first_name + "'s"
     # get previously uploaded photos
-    image_objects = db.session.query(Image.date_uploaded, postgresql.array_agg(Image.path))\
+    image_objects = db.session.query(Image.month_uploaded, postgresql.array_agg(Image.path))\
                     .join(User)\
-                    .group_by(Image.date_uploaded)\
-                    .order_by(desc(Image.date_uploaded))\
+                    .filter(Image.user_id==current_user.id)\
+                    .group_by(Image.month_uploaded)\
+                    .order_by(desc(Image.month_uploaded))\
                     .all()
     image_sections = ImageStorageService.get_user_images(image_objects)
     return render_template('index.html', name=name, image_sections=image_sections)
@@ -68,9 +69,14 @@ def upload_images():
                 flash('Internal Error: Credentials not available. Please try again later.')
                 return redirect(url_for('index'))
 
+            this_month = datetime(
+                datetime.today().year,
+                datetime.today().month,
+                1
+            )
             # create database object
             img_obj = Image(
-                date_uploaded=datetime.today(),
+                month_uploaded=this_month,
                 path=image.filename,
                 user_id=current_user.id
             )
