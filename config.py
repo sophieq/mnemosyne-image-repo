@@ -12,6 +12,8 @@ class Config(object):
     CF_ID = os.environ['CLOUDFRONT_ID']
     CF_DOMAIN = os.environ['CLOUDFRONT_DOMAIN']
     BUCKET = os.environ['S3_BUCKET']
+    S3_ID = os.environ['S3_ID']
+    S3_SECRET = os.environ['S3_SECRET']
 
 class ProductionConfig(Config):
     DEBUG = False

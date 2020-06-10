@@ -49,7 +49,6 @@ def index():
 @app.route('/images', methods=["POST"])
 @login_required
 def upload_images():
-    print(request.files)
     if request.files:
         images = request.files.getlist("images")
         img_objects = []

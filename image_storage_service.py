@@ -37,7 +37,11 @@ class ImageStorageService():
         # save to temp file for now
         image.save(path)
         # save to s3
-        s3 = boto3.client('s3')
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=app.config['S3_ID'],
+            aws_secret_access_key=app.config['S3_SECRET']
+        )
         ExtraArgs = {
             'ContentType': image.content_type
         }
@@ -79,10 +83,9 @@ class ImageStorageService():
     def rsa_signer(message: str) -> str:
         from app import app
 
-        with open(app.config['CF_KEY'], 'rb') as key_file:
-            private_key = serialization.load_pem_private_key(
-                key_file.read(),
-                password=None,
-                backend=default_backend()
-            )
+        private_key = serialization.load_pem_private_key(
+            app.config['CF_KEY'].encode(),
+            password=None,
+            backend=default_backend()
+        )
         return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
