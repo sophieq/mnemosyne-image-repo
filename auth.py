@@ -43,14 +43,13 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
 
+    flash('Sign in with you newly created account!')
     return redirect(url_for('auth.login'))
-
 
 @auth.route('/login', methods=['POST'])
 def login_post():
     email = request.form.get('email')
     password = request.form.get('password')
-    remember = request.form.get('remember')
 
     user = User.query.filter_by(email=email).first()
 
@@ -58,5 +57,5 @@ def login_post():
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login'))
 
-    login_user(user, remember=remember)
+    login_user(user)
     return redirect(url_for('index'))
