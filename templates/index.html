@@ -5,7 +5,7 @@
 
   <form action="/images" method="POST" enctype="multipart/form-data">
     <div class="form-group">
-      <label>Select image</label>
+      <label>Add Images</label>
       {% with messages = get_flashed_messages() %} {% if messages %}
       <div class="notification is-danger">
         {{ messages[0] }}
@@ -21,18 +21,16 @@
         />
       </div>
     </div>
-
     <button type="submit" class="btn btn-primary">Upload</button>
   </form>
-
   <div>
     {% for section in image_sections %}
     <div>
-      <h2>{{section[0]}}</h2>
+      <h2>{{section["date"]}}</h2>
       <hr />
-      {% for path in section[1] %}
+      {% for path in section["urls"] %}
       <div>
-        <img src="{{url_for('static', filename=path)}}" />
+        <img src="{{path}}" />
       </div>
       {% endfor %}
     </div>
