@@ -8,7 +8,7 @@ Simple Interface to securely add and display images.
 ## Features
 
 - Authentication to see your photos
-- Uploaded photos are securely added and fetched from s3 using presigned signed urls
+- Uploaded photos are securely added and fetched from s3 using presigned urls
 
 ## Tech Stack
 
